@@ -27,8 +27,13 @@ func (t MenuGateway) GetAll() ([]domain.Menu, error) {
 		todo := domain.Menu{
 			MenuId: t.MenuId,
 			MenuName: t.MenuName,
-			EatingGenreId: t.EatingGenreId,
-			EatingCategoryId: t.EatingCategoryId,
+		}
+		// メニューに紐づくジャンルIDリストとカテゴリIDリストを取得
+		for _, genre := range t.Genres {
+			todo.GenreIds = append(todo.GenreIds, genre.GenreId)
+		}
+		for _, category := range t.Categories {
+			todo.CategoryIds = append(todo.CategoryIds, category.CategoryId)
 		}
 		menus = append(menus, todo)
 	}

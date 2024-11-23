@@ -18,16 +18,21 @@ func ProvideMenuDriver(conn *gorm.DB) MenuDriver {
 
 func (t MenuDriverImpl) GetAll() ([]Menu, error) {
 	menus := []Menu{}
-	t.conn.Find(&menus)
+	// Preloadで関連データを読み込む
+	// 動作が遅くなる場合はPluckかJoinsを使って最適化する
+    if err := t.conn.Preload("Genres").Preload("Categories").Find(&menus).Error; err != nil {
+        return nil, err
+    }
 
 	return menus, nil
 }
 
 type Menu struct{
 	MenuId			uint   `gorm:"primaryKey" json:"id"`
-	MenuName	string `gorm:"size:50" json:"menu_name"`
-	EatingGenreId uint `json:"eating_genre_id"`
-	EatingCategoryId uint `json:"eating_category_id"`
+	MenuName	string `gorm:"size:50;column:menu_name" json:"menu_name"`
+	// many2many タグで中間テーブルを指定
+    Genres      []Genre         `gorm:"many2many:menu_genre_relation;joinForeignKey:menu_id;JoinReferences:genre_id"`
+    Categories  []Category      `gorm:"many2many:menu_category_relation;joinForeignKey:menu_id;JoinReferences:category_id"`
 }
 
 func (Menu) TableName() string {
@@ -35,7 +40,7 @@ func (Menu) TableName() string {
 }
 
 type Genre struct{
-	EatingGenreId			uint   `gorm:"primaryKey" json:"genre_id"`
+	GenreId			uint   `gorm:"primaryKey" json:"genre_id"`
 	GenreName	string `gorm:"size:50" json:"genre_name"`
 }
 
@@ -43,11 +48,11 @@ func (Genre) TableName() string {
 	return "eating_genre_list"
 }
 
-type Categories struct{
-	EatingCategoryId			uint   `gorm:"primaryKey" json:"category_id"`
+type Category struct{
+	CategoryId			uint   `gorm:"primaryKey" json:"category_id"`
 	CategoryName	string `gorm:"size:50" json:"category_name"`
 }
 
-func (Categories) TableName() string {
+func (Category) TableName() string {
 	return "eating_category_list"
 }
