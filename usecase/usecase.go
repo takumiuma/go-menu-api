@@ -14,11 +14,31 @@ func ProvideMenuUsecase(menuPort port.MenuPort) MenuUsecase {
 }
 
 func (u MenuUsecase) GetAll() ([]domain.Menu, error) {
-	todos, err :=  u.menuPort.GetAll()
+	menus, err :=  u.menuPort.GetAll()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return todos, nil
+	return menus, nil
+}
+
+func (u MenuUsecase) UpdateGenreRelations(menuId uint, genreIds []uint) (domain.Menu, error) {
+	menu, err := u.menuPort.UpdateGenreRelations(menuId, genreIds)
+
+	if err != nil {
+		return domain.Menu{}, err
+	}
+
+	return menu, nil
+}
+
+func (u MenuUsecase) UpdateCategoryRelations(menuId uint, categoryIds []uint) (domain.Menu, error) {
+	menu, err := u.menuPort.UpdateCategoryRelations(menuId, categoryIds)
+
+	if err != nil {
+		return domain.Menu{}, err
+	}
+
+	return menu, nil
 }

@@ -21,6 +21,7 @@ func NewServer() *gin.Engine {
 			"OPTIONS",
 			"PUT",
 			"DELETE",
+			"PATCH",
 		},
 		// 許可したいHTTPリクエストヘッダ
 		AllowHeaders: []string{
@@ -55,6 +56,8 @@ func NewServer() *gin.Engine {
 	{
 		menuHandler := di.InitTodoHandler()
 		v1.GET("/menus", menuHandler.GetAll)
+		v1.PATCH("/menus/:menu_id/genres", menuHandler.UpdateGenreRelations)
+		v1.PATCH("/menus/:menu_id/categories", menuHandler.UpdateCategoryRelations)
 	}
 
 	return r
