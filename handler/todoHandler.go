@@ -17,10 +17,18 @@ func ProvideMenuHandler(u usecase.MenuUsecase) *MenuHandler {
 	return &MenuHandler{u}
 }
 
-type MenuRequest struct{}
-
-type MenusResponse struct {
+type MenusGetResponse struct {
 	Menus []domain.Menu `json:"menus"`
+}
+
+type MenuPostRequest struct {
+    MenuName   string `json:"menu_name"`
+    GenreIds   []uint `json:"genre_ids"`
+    CategoryIds []uint `json:"category_ids"`
+}
+
+type MenuPostResponse struct {
+    Menu domain.Menu `json:"menu"`
 }
 
 type MenuGenrePatchRequest struct {
@@ -45,10 +53,42 @@ func (h MenuHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	response := MenusResponse{
+	response := MenusGetResponse{
 		Menus: menus,
 	}
 	c.JSON(http.StatusOK, response)
+}
+
+func (h MenuHandler) CreateMenu(c *gin.Context) {
+    var req MenuPostRequest
+    // リクエストボディを取得
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{
+            "message": "invalid request",
+        })
+        return
+    }
+
+    // メニューを作成
+    menu := domain.Menu{
+        MenuName:   req.MenuName,
+        GenreIds:   req.GenreIds,
+        CategoryIds: req.CategoryIds,
+    }
+
+    createdMenu, err := h.menuUsecase.CreateMenu(menu)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message": err.Error(),
+        })
+        return
+    }
+
+    response := MenuPostResponse{
+        Menu: createdMenu,
+    }
+
+    c.JSON(http.StatusOK, response)
 }
 
 func (h MenuHandler) UpdateGenreRelations(c *gin.Context) {

@@ -34,6 +34,24 @@ func (t MenuGateway) GetAll() ([]domain.Menu, error) {
 	return menus, nil
 }
 
+// CreateMenu はメニューを作成する
+func (t MenuGateway) CreateMenu(menu domain.Menu) (domain.Menu, error) {
+	result, err := t.menuDriver.CreateMenu(menu.MenuName, menu.GenreIds, menu.CategoryIds)
+
+	if err != nil {
+		return domain.Menu{}, err
+	}
+
+	menu = domain.Menu{
+		MenuId: result.MenuId,
+		MenuName: result.MenuName,
+		GenreIds: t.getRestGenreIds(result.Genres),
+		CategoryIds: t.getRestCategoryIds(result.Categories),
+	}
+
+	return menu, nil
+}
+
 // UpdateGenreRelations はメニューに紐づくジャンルを更新する
 func (t MenuGateway) UpdateGenreRelations(menuId uint, genreIds []uint) (domain.Menu, error) {
 	result, err := t.menuDriver.UpdateGenreRelations(menuId, genreIds)

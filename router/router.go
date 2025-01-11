@@ -56,6 +56,7 @@ func NewServer() *gin.Engine {
 	{
 		menuHandler := di.InitTodoHandler()
 		v1.GET("/menus", menuHandler.GetAll)
+		v1.POST("/menus", menuHandler.CreateMenu)
 		v1.PATCH("/menus/:menu_id/genres", menuHandler.UpdateGenreRelations)
 		v1.PATCH("/menus/:menu_id/categories", menuHandler.UpdateCategoryRelations)
 	}

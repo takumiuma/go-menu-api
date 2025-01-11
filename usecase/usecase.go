@@ -23,6 +23,15 @@ func (u MenuUsecase) GetAll() ([]domain.Menu, error) {
 	return menus, nil
 }
 
+func (u MenuUsecase) CreateMenu(menu domain.Menu) (domain.Menu, error) {
+    menus, err := u.menuPort.CreateMenu(menu)
+	if err != nil {
+		return domain.Menu{}, err
+	}
+
+	return menus, nil
+}
+
 func (u MenuUsecase) UpdateGenreRelations(menuId uint, genreIds []uint) (domain.Menu, error) {
 	menu, err := u.menuPort.UpdateGenreRelations(menuId, genreIds)
 
