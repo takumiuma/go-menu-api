@@ -7,6 +7,7 @@ import (
 type MenuDriver interface {
 	GetAll() ([]Menu, error)
 	CreateMenu(menuName string, genreIds []uint, categoryIds []uint) (Menu, error)
+	UpdateMenu(menuId uint, menuName string, genreIds []uint, categoryIds []uint) (Menu, error)
 	UpdateGenreRelations(menuId uint, genreIds []uint) (Menu, error)
 	UpdateCategoryRelations(menuId uint, categoryIds []uint) (Menu, error)
 }
@@ -68,6 +69,61 @@ func (t MenuDriverImpl) CreateMenu(menuName string, genreIds []uint, categoryIds
 	}
 	// 中間テーブルにデータを追加
 	if err := tx.Model(&menu).Association("Categories").Append(categories); err != nil {
+		tx.Rollback()
+		return Menu{}, err
+	}
+
+	// コミット
+	if err := tx.Commit().Error; err != nil {
+		return Menu{}, err
+	}
+
+	return menu, nil
+}
+
+// UpdateMenu はメニューを更新する
+func (t MenuDriverImpl) UpdateMenu(menuId uint, menuName string, genreIds []uint, categoryIds []uint) (Menu, error) {
+	var menu Menu
+
+	// メニューを取得
+	if err := t.conn.Preload("Genres").Preload("Categories").First(&menu, menuId).Error; err != nil {
+		return Menu{}, err
+	}
+
+	// トランザクション開始
+	tx := t.conn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// メニューを更新
+	if err := tx.Model(&menu).Updates(Menu{MenuName: menuName}).Error; err != nil {
+		tx.Rollback()
+		return Menu{}, err
+	}
+
+	// ジャンルを取得
+	var genres []Genre
+	if err := tx.Where("genre_id IN ?", genreIds).Find(&genres).Error; err != nil {
+		tx.Rollback()
+		return Menu{}, err
+	}
+	// 中間テーブルのデータを置き換え
+	if err := tx.Model(&menu).Association("Genres").Replace(genres); err != nil {
+		tx.Rollback()
+		return Menu{}, err
+	}
+
+	// カテゴリを取得
+	var categories []Category
+	if err := tx.Where("category_id IN ?", categoryIds).Find(&categories).Error; err != nil {
+		tx.Rollback()
+		return Menu{}, err
+	}
+	// 中間テーブルのデータを置き換え
+	if err := tx.Model(&menu).Association("Categories").Replace(categories); err != nil {
 		tx.Rollback()
 		return Menu{}, err
 	}
