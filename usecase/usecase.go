@@ -61,3 +61,13 @@ func (u MenuUsecase) UpdateCategoryRelations(menuId uint, categoryIds []uint) (d
 
 	return menu, nil
 }
+
+func (u MenuUsecase) DeleteMenu(menuId uint) error {
+	err := u.menuPort.DeleteMenu(menuId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

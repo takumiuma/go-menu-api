@@ -106,6 +106,17 @@ func (t MenuGateway) UpdateCategoryRelations(menuId uint, categoryIds []uint) (d
 	return menu, nil
 }
 
+// DeleteMenu はメニューを削除する
+func (t MenuGateway) DeleteMenu(menuId uint) error {
+	err := t.menuDriver.DeleteMenu(menuId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetRestGenreIds はメニューに紐づくジャンルIDリストを取得する
 func (t MenuGateway) getRestGenreIds(genres []menu.Genre) ([]uint) {
 	var genreIds []uint

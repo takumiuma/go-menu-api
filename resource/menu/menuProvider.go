@@ -10,6 +10,7 @@ type MenuDriver interface {
 	UpdateMenu(menuId uint, menuName string, genreIds []uint, categoryIds []uint) (Menu, error)
 	UpdateGenreRelations(menuId uint, genreIds []uint) (Menu, error)
 	UpdateCategoryRelations(menuId uint, categoryIds []uint) (Menu, error)
+	DeleteMenu(menuId uint) error
 }
 
 type MenuDriverImpl struct {
@@ -206,6 +207,30 @@ func (t MenuDriverImpl) UpdateCategoryRelations(menuId uint, categoryIds []uint)
 	}
 
 	return menu, nil
+}
+
+// DeleteMenu はメニューを削除する
+func (t MenuDriverImpl) DeleteMenu(menuId uint) error {
+	// トランザクション開始
+	tx := t.conn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// メニューを削除
+	if err := tx.Delete(&Menu{}, menuId).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// コミット
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Menu struct {

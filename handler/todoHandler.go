@@ -206,3 +206,27 @@ func (h MenuHandler) UpdateCategoryRelations(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h MenuHandler) DeleteMenu(c *gin.Context) {
+	// パスパラメータからmenu_idを取得
+	menuId,err := strconv.Atoi(c.Param("menu_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "invalid menu_id",
+		})
+		return
+	}
+
+	// メニューを削除
+	err = h.menuUsecase.DeleteMenu(uint(menuId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
+}
