@@ -29,7 +29,7 @@ func ConnectToDatabase() *gorm.DB {
 		log.Fatal("データベース接続に失敗しました: ", err)
 	}
 
-	// AutoMigrate実行 - User and Favorite models
+	// AutoMigrate実行 - UserとFavoriteモデル
 	err = db.AutoMigrate(&user.User{}, &user.Favorite{})
 	if err != nil {
 		log.Fatal("マイグレーションに失敗しました: ", err)
@@ -43,6 +43,6 @@ func ConnectToDatabase() *gorm.DB {
 
 	// データベース接続確認
 	log.Println("データベース接続に成功しました:", db)
-	log.Println("User and Favorite models migration completed")
+	log.Println("UserとFavoriteモデルのマイグレーションが完了しました")
 	return db
 }
