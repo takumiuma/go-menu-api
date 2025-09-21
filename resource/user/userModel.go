@@ -34,7 +34,7 @@ func (Favorite) TableName() string {
 
 // UserDriver はユーザー関連のデータベース操作のためのインターフェース
 type UserDriver interface {
-	CreateOrGetUser(auth0Sub string) (User, error)
+	CreateOrGetUser(auth0Sub string) (User, bool, error)
 	GetUserByAuth0Sub(auth0Sub string) (User, error)
 	AddFavorite(userID, menuID uint) (Favorite, error)
 	RemoveFavorite(userID, menuID uint) error
@@ -52,28 +52,29 @@ func ProvideUserDriver(conn *gorm.DB) UserDriver {
 }
 
 // CreateOrGetUser は新しいユーザーを作成するか、Auth0Subで既存のユーザーを返します
-func (u UserDriverImpl) CreateOrGetUser(auth0Sub string) (User, error) {
+// 戻り値: (User, bool, error) - boolは新規作成の場合true
+func (u UserDriverImpl) CreateOrGetUser(auth0Sub string) (User, bool, error) {
 	var user User
 
 	// 最初に既存のユーザーを検索
 	err := u.conn.Where("auth0_sub = ?", auth0Sub).First(&user).Error
 	if err == nil {
 		// ユーザーは既に存在します
-		return user, nil
+		return user, false, nil
 	}
 
 	if err != gorm.ErrRecordNotFound {
 		// その他のエラーが発生しました
-		return User{}, err
+		return User{}, false, err
 	}
 
 	// ユーザーが存在しないため、新しいユーザーを作成
 	user = User{Auth0Sub: auth0Sub}
 	if err := u.conn.Create(&user).Error; err != nil {
-		return User{}, err
+		return User{}, false, err
 	}
 
-	return user, nil
+	return user, true, nil
 }
 
 // GetUserByAuth0Sub はAuth0 Subjectでユーザーを取得します
