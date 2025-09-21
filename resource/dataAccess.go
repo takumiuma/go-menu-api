@@ -25,27 +25,20 @@ func ConnectToDatabase() *gorm.DB {
 
 	// GORMを使ってデータベースに接続
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		// テーブル作成時に外部キー参照制約を無効化にすることで、マイグレーションエラーを防止
-		DisableForeignKeyConstraintWhenMigrating: true,
+		// true:テーブル作成時に外部キー参照制約を無効化にすることで、マイグレーションエラーを防止
+		DisableForeignKeyConstraintWhenMigrating: false,
 	})
 	if err != nil {
 		log.Fatal("データベース接続に失敗しました: ", err)
 	}
 
-	// AutoMigrate実行 - UserとFavoriteモデル
+	// AutoMigrate実行
 	err = db.AutoMigrate(&user.User{}, &user.Favorite{})
 	if err != nil {
 		log.Fatal("マイグレーションに失敗しました: ", err)
 	}
 
-	// 複合ユニークインデックスの追加
-	err = db.Exec("CREATE UNIQUE INDEX idx_favorites_user_menu ON favorites(user_id, menu_id)").Error
-	if err != nil {
-		log.Printf("複合ユニークインデックスの作成でエラーが発生しました: %v", err)
-	}
-
 	// データベース接続確認
 	log.Println("データベース接続に成功しました:", db)
-	log.Println("UserとFavoriteモデルのマイグレーションが完了しました")
 	return db
 }
