@@ -2,6 +2,7 @@ package router
 
 import (
 	"go-menu/di"
+	"go-menu/middleware"
 
 	"time"
 
@@ -53,6 +54,13 @@ func NewServer() *gin.Engine {
 
 	v1 := r.Group("/v1")
 
+	// システム関連エンドポイント
+	{
+		systemHandler := di.InitSystemHandler()
+		v1.GET("/ping", systemHandler.Ping)
+	}
+
+	// メニュー関連エンドポイント（認証不要）
 	{
 		menuHandler := di.InitTodoHandler()
 		v1.GET("/menus", menuHandler.GetAll)
@@ -61,6 +69,25 @@ func NewServer() *gin.Engine {
 		v1.DELETE("/menus/:menu_id", menuHandler.DeleteMenu)
 		v1.PATCH("/menus/:menu_id/genres", menuHandler.UpdateGenreRelations)
 		v1.PATCH("/menus/:menu_id/categories", menuHandler.UpdateCategoryRelations)
+	}
+
+	// お気に入り関連エンドポイント（認証必要）
+	{
+		// Auth0設定とミドルウェアの初期化
+		auth0Config := middleware.NewAuth0Config()
+		userDriver := di.InitUserDriver()
+		authMiddleware := middleware.AuthMiddleware(userDriver, auth0Config)
+
+		favoriteHandler := di.InitFavoriteHandler()
+
+		// 認証が必要なエンドポイントグループ
+		authGroup := v1.Group("/favorites")
+		authGroup.Use(authMiddleware)
+		{
+			authGroup.GET("", favoriteHandler.GetFavorites)
+			authGroup.POST("", favoriteHandler.AddFavorite)
+			authGroup.DELETE("/:menu_id", favoriteHandler.RemoveFavorite)
+		}
 	}
 
 	return r
