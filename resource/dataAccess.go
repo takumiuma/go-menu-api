@@ -24,7 +24,10 @@ func ConnectToDatabase() *gorm.DB {
 		dbUser, dbPass, dbHost, dbPort, dbName)
 
 	// GORMを使ってデータベースに接続
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// テーブル作成時に外部キー参照制約を無効化にすることで、マイグレーションエラーを防止
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		log.Fatal("データベース接続に失敗しました: ", err)
 	}
@@ -36,7 +39,7 @@ func ConnectToDatabase() *gorm.DB {
 	}
 
 	// 複合ユニークインデックスの追加
-	err = db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_favorites_user_menu ON favorites(user_id, menu_id)").Error
+	err = db.Exec("CREATE UNIQUE INDEX idx_favorites_user_menu ON favorites(user_id, menu_id)").Error
 	if err != nil {
 		log.Printf("複合ユニークインデックスの作成でエラーが発生しました: %v", err)
 	}

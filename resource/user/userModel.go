@@ -9,7 +9,7 @@ import (
 // User はAuth0統合のためのusersテーブルを表します
 type User struct {
 	UserID    uint   `gorm:"primaryKey;column:user_id"`
-	Auth0Sub  string `gorm:"uniqueIndex;not null;column:auth0_sub"`
+	Auth0Sub  string `gorm:"type:varchar(255);uniqueIndex;not null;column:auth0_sub"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
