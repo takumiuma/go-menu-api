@@ -35,3 +35,10 @@ func InitUserDriver() user.UserDriver {
 	userDriver := user.ProvideUserDriver(db)
 	return userDriver
 }
+
+func InitUserHandler() *handler.UserHandler {
+	db := resource.ConnectToDatabase()
+	userDriver := user.ProvideUserDriver(db)
+	userHandler := handler.ProvideUserHandler(userDriver)
+	return userHandler
+}

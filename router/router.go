@@ -71,6 +71,12 @@ func NewServer() *gin.Engine {
 		v1.PATCH("/menus/:menu_id/categories", menuHandler.UpdateCategoryRelations)
 	}
 
+	// ユーザー関連エンドポイント（認証不要）
+	{
+		userHandler := di.InitUserHandler()
+		v1.POST("/users", userHandler.CreateUser)
+	}
+
 	// お気に入り関連エンドポイント（認証必要）
 	{
 		// Auth0設定とミドルウェアの初期化
