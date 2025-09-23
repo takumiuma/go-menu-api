@@ -14,7 +14,7 @@ func ProvideMenuUsecase(menuPort port.MenuPort) MenuUsecase {
 }
 
 func (u MenuUsecase) GetAll() ([]domain.Menu, error) {
-	menus, err := u.menuPort.GetAll()
+	menus, err :=  u.menuPort.GetAll()
 
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (u MenuUsecase) GetAll() ([]domain.Menu, error) {
 }
 
 func (u MenuUsecase) CreateMenu(menu domain.Menu) (domain.Menu, error) {
-	menus, err := u.menuPort.CreateMenu(menu)
+    menus, err := u.menuPort.CreateMenu(menu)
 	if err != nil {
 		return domain.Menu{}, err
 	}

@@ -12,7 +12,6 @@ type SystemHandler struct {
 func (h SystemHandler) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
-		"status":  "healthy",
 	})
 }
 

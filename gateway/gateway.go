@@ -23,9 +23,9 @@ func (t MenuGateway) GetAll() ([]domain.Menu, error) {
 	var menus []domain.Menu
 	for _, result := range results {
 		todo := domain.Menu{
-			MenuId:      result.MenuId,
-			MenuName:    result.MenuName,
-			GenreIds:    t.getRestGenreIds(result.Genres),
+			MenuId: result.MenuId,
+			MenuName: result.MenuName,
+			GenreIds: t.getRestGenreIds(result.Genres),
 			CategoryIds: t.getRestCategoryIds(result.Categories),
 		}
 		menus = append(menus, todo)
@@ -43,9 +43,9 @@ func (t MenuGateway) CreateMenu(menu domain.Menu) (domain.Menu, error) {
 	}
 
 	menu = domain.Menu{
-		MenuId:      result.MenuId,
-		MenuName:    result.MenuName,
-		GenreIds:    t.getRestGenreIds(result.Genres),
+		MenuId: result.MenuId,
+		MenuName: result.MenuName,
+		GenreIds: t.getRestGenreIds(result.Genres),
 		CategoryIds: t.getRestCategoryIds(result.Categories),
 	}
 
@@ -61,9 +61,9 @@ func (t MenuGateway) UpdateMenu(menu domain.Menu) (domain.Menu, error) {
 	}
 
 	menu = domain.Menu{
-		MenuId:      result.MenuId,
-		MenuName:    result.MenuName,
-		GenreIds:    t.getRestGenreIds(result.Genres),
+		MenuId: result.MenuId,
+		MenuName: result.MenuName,
+		GenreIds: t.getRestGenreIds(result.Genres),
 		CategoryIds: t.getRestCategoryIds(result.Categories),
 	}
 
@@ -79,9 +79,9 @@ func (t MenuGateway) UpdateGenreRelations(menuId uint, genreIds []uint) (domain.
 	}
 
 	menu := domain.Menu{
-		MenuId:      result.MenuId,
-		MenuName:    result.MenuName,
-		GenreIds:    t.getRestGenreIds(result.Genres),
+		MenuId: result.MenuId,
+		MenuName: result.MenuName,
+		GenreIds: t.getRestGenreIds(result.Genres),
 		CategoryIds: t.getRestCategoryIds(result.Categories),
 	}
 
@@ -97,9 +97,9 @@ func (t MenuGateway) UpdateCategoryRelations(menuId uint, categoryIds []uint) (d
 	}
 
 	menu := domain.Menu{
-		MenuId:      result.MenuId,
-		MenuName:    result.MenuName,
-		GenreIds:    t.getRestGenreIds(result.Genres),
+		MenuId: result.MenuId,
+		MenuName: result.MenuName,
+		GenreIds: t.getRestGenreIds(result.Genres),
 		CategoryIds: t.getRestCategoryIds(result.Categories),
 	}
 
@@ -118,7 +118,7 @@ func (t MenuGateway) DeleteMenu(menuId uint) error {
 }
 
 // GetRestGenreIds はメニューに紐づくジャンルIDリストを取得する
-func (t MenuGateway) getRestGenreIds(genres []menu.Genre) []uint {
+func (t MenuGateway) getRestGenreIds(genres []menu.Genre) ([]uint) {
 	var genreIds []uint
 
 	for _, genre := range genres {
@@ -129,7 +129,7 @@ func (t MenuGateway) getRestGenreIds(genres []menu.Genre) []uint {
 }
 
 // GetRestCategoryIds はメニューに紐づくカテゴリIDリストを取得する
-func (t MenuGateway) getRestCategoryIds(categories []menu.Category) []uint {
+func (t MenuGateway) getRestCategoryIds(categories []menu.Category) ([]uint) {
 	var categoryIds []uint
 
 	for _, category := range categories {
@@ -138,3 +138,4 @@ func (t MenuGateway) getRestCategoryIds(categories []menu.Category) []uint {
 
 	return categoryIds
 }
+

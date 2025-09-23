@@ -22,19 +22,19 @@ type MenusGetResponse struct {
 }
 
 type MenuPostRequest struct {
-	MenuName    string `json:"menu_name"`
-	GenreIds    []uint `json:"genre_ids"`
-	CategoryIds []uint `json:"category_ids"`
+    MenuName   string `json:"menu_name"`
+    GenreIds   []uint `json:"genre_ids"`
+    CategoryIds []uint `json:"category_ids"`
 }
 
 type MenuPostResponse struct {
-	Menu domain.Menu `json:"menu"`
+    Menu domain.Menu `json:"menu"`
 }
 
 type MenuPutRequest struct {
-	MenuName    string `json:"menu_name"`
-	GenreIds    []uint `json:"genre_ids"`
-	CategoryIds []uint `json:"category_ids"`
+	MenuName   string `json:"menu_name"`
+    GenreIds   []uint `json:"genre_ids"`
+    CategoryIds []uint `json:"category_ids"`
 }
 
 type MenuPutResponse struct {
@@ -53,6 +53,7 @@ type MenuPatchResponse struct {
 	Menu domain.Menu `json:"menu"`
 }
 
+
 func (h MenuHandler) GetAll(c *gin.Context) {
 	menus, err := h.menuUsecase.GetAll()
 	if err != nil {
@@ -69,49 +70,49 @@ func (h MenuHandler) GetAll(c *gin.Context) {
 }
 
 func (h MenuHandler) CreateMenu(c *gin.Context) {
-	var req MenuPostRequest
-	// リクエストボディを取得
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid request",
-		})
-		return
-	}
+    var req MenuPostRequest
+    // リクエストボディを取得
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{
+            "message": "invalid request",
+        })
+        return
+    }
 
-	// メニューを作成
-	menu := domain.Menu{
-		MenuName:    req.MenuName,
-		GenreIds:    req.GenreIds,
-		CategoryIds: req.CategoryIds,
-	}
+    // メニューを作成
+    menu := domain.Menu{
+        MenuName:   req.MenuName,
+        GenreIds:   req.GenreIds,
+        CategoryIds: req.CategoryIds,
+    }
 
-	createdMenu, err := h.menuUsecase.CreateMenu(menu)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+    createdMenu, err := h.menuUsecase.CreateMenu(menu)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message": err.Error(),
+        })
+        return
+    }
 
-	response := MenuPostResponse{
-		Menu: createdMenu,
-	}
+    response := MenuPostResponse{
+        Menu: createdMenu,
+    }
 
-	c.JSON(http.StatusOK, response)
+    c.JSON(http.StatusOK, response)
 }
 
 func (h MenuHandler) UpdateMenu(c *gin.Context) {
 	var req MenuPutRequest
 	// リクエストボディを取得
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid request",
-		})
-		return
-	}
+        c.JSON(http.StatusBadRequest, gin.H{
+            "message": "invalid request",
+        })
+        return
+    }
 
 	// パスパラメータからmenu_idを取得
-	menuId, err := strconv.Atoi(c.Param("menu_id"))
+	menuId,err := strconv.Atoi(c.Param("menu_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid menu_id",
@@ -121,25 +122,25 @@ func (h MenuHandler) UpdateMenu(c *gin.Context) {
 
 	// メニューを更新
 	menu := domain.Menu{
-		MenuId:      uint(menuId),
-		MenuName:    req.MenuName,
-		GenreIds:    req.GenreIds,
+		MenuId: uint(menuId),
+		MenuName: req.MenuName,
+		GenreIds: req.GenreIds,
 		CategoryIds: req.CategoryIds,
 	}
 
 	updatedMenu, err := h.menuUsecase.UpdateMenu(menu)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message": err.Error(),
+        })
+        return
+    }
 
-	response := MenuPutResponse{
-		Menu: updatedMenu,
-	}
+    response := MenuPutResponse{
+        Menu: updatedMenu,
+    }
 
-	c.JSON(http.StatusOK, response)
+    c.JSON(http.StatusOK, response)
 }
 
 func (h MenuHandler) UpdateGenreRelations(c *gin.Context) {
@@ -149,8 +150,8 @@ func (h MenuHandler) UpdateGenreRelations(c *gin.Context) {
 		return
 	}
 
-	// パスパラメータからmenu_idを取得
-	menuId, err := strconv.Atoi(c.Param("menu_id"))
+	// パスパラメータからmenu_idを取得	
+	menuId,err := strconv.Atoi(c.Param("menu_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid menu_id",
@@ -181,8 +182,8 @@ func (h MenuHandler) UpdateCategoryRelations(c *gin.Context) {
 		return
 	}
 
-	// パスパラメータからmenu_idを取得
-	menuId, err := strconv.Atoi(c.Param("menu_id"))
+	// パスパラメータからmenu_idを取得	
+	menuId,err := strconv.Atoi(c.Param("menu_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid menu_id",
@@ -208,7 +209,7 @@ func (h MenuHandler) UpdateCategoryRelations(c *gin.Context) {
 
 func (h MenuHandler) DeleteMenu(c *gin.Context) {
 	// パスパラメータからmenu_idを取得
-	menuId, err := strconv.Atoi(c.Param("menu_id"))
+	menuId,err := strconv.Atoi(c.Param("menu_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "invalid menu_id",
