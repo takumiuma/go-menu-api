@@ -2,9 +2,12 @@ package main
 
 import (
 	"go-menu/router"
+	"log"
 )
 
 func main() {
 	s := router.NewServer()
-	s.Run(":8080")
+	if err := s.Run(":8080"); err != nil {
+		log.Fatal("サーバーの起動に失敗しました: ", err)
+	}
 }
