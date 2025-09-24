@@ -30,6 +30,7 @@ go-menu
 
 # IDE files
 .vscode/settings.json
+.vscode/launch.json
 *.swp
 *.swo
 *~
