@@ -26,7 +26,8 @@ func InitTodoHandler() *handler.MenuHandler {
 func InitFavoriteHandler() *handler.FavoriteHandler {
 	db := resource.ConnectToDatabase()
 	userDriver := user.ProvideUserDriver(db)
-	favoriteHandler := handler.ProvideFavoriteHandler(userDriver)
+	menuDriver := menu.ProvideMenuDriver(db)
+	favoriteHandler := handler.ProvideFavoriteHandler(userDriver, menuDriver)
 	return favoriteHandler
 }
 

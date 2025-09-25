@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"go-menu/resource/menu"
 	"go-menu/resource/user"
 	"net/http"
 	"strconv"
@@ -11,11 +12,12 @@ import (
 // FavoriteHandler お気に入り機能のHTTPハンドラー
 type FavoriteHandler struct {
 	userDriver user.UserDriver
+	menuDriver menu.MenuDriver
 }
 
 // ProvideFavoriteHandler FavoriteHandlerのコンストラクタ
-func ProvideFavoriteHandler(userDriver user.UserDriver) *FavoriteHandler {
-	return &FavoriteHandler{userDriver: userDriver}
+func ProvideFavoriteHandler(userDriver user.UserDriver, menuDriver menu.MenuDriver) *FavoriteHandler {
+	return &FavoriteHandler{userDriver: userDriver, menuDriver: menuDriver}
 }
 
 // AddFavoriteRequest お気に入り追加リクエスト
@@ -31,6 +33,12 @@ type AddFavoriteResponse struct {
 // GetFavoritesResponse お気に入り一覧取得レスポンス
 type GetFavoritesResponse struct {
 	Favorites []user.Favorite `json:"favorites"`
+}
+
+// FavoriteCheckResponse お気に入り状態確認レスポンス
+type FavoriteCheckResponse struct {
+	IsFavorite bool  `json:"isFavorite"`
+	FavoriteID *uint `json:"favoriteId,omitempty"`
 }
 
 // AddFavorite お気に入りを追加
@@ -150,6 +158,68 @@ func (h *FavoriteHandler) GetFavorites(c *gin.Context) {
 
 	response := GetFavoritesResponse{
 		Favorites: favorites,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// CheckFavoriteStatus お気に入り状態を確認
+func (h *FavoriteHandler) CheckFavoriteStatus(c *gin.Context) {
+	// コンテキストからユーザーIDを取得
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User not authenticated",
+		})
+		return
+	}
+
+	userIDUint, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid user ID format",
+		})
+		return
+	}
+
+	// パスパラメータから menu_id を取得
+	menuIDStr := c.Param("menuId")
+	menuID, err := strconv.ParseUint(menuIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid menu_id",
+		})
+		return
+	}
+
+	// メニューが存在するかチェック
+	exists, err = h.menuDriver.MenuExists(uint(menuID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to check menu existence: " + err.Error(),
+		})
+		return
+	}
+
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Menu not found",
+		})
+		return
+	}
+
+	// お気に入り状態をチェック
+	isFavorite, favoriteID, err := h.userDriver.CheckFavoriteStatus(userIDUint, uint(menuID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to check favorite status: " + err.Error(),
+		})
+		return
+	}
+
+	response := FavoriteCheckResponse{
+		IsFavorite: isFavorite,
+		FavoriteID: favoriteID,
 	}
 
 	c.JSON(http.StatusOK, response)
