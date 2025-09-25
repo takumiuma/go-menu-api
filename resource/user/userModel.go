@@ -39,6 +39,7 @@ type UserDriver interface {
 	AddFavorite(userID, menuID uint) (Favorite, error)
 	RemoveFavorite(userID, menuID uint) error
 	GetUserFavorites(userID uint) ([]Favorite, error)
+	CheckFavoriteStatus(userID, menuID uint) (bool, *uint, error)
 }
 
 // UserDriverImpl はUserDriverインターフェースを実装します
@@ -105,4 +106,23 @@ func (u UserDriverImpl) GetUserFavorites(userID uint) ([]Favorite, error) {
 	var favorites []Favorite
 	err := u.conn.Where("user_id = ?", userID).Find(&favorites).Error
 	return favorites, err
+}
+
+// CheckFavoriteStatus はユーザーの特定メニューのお気に入り状態を確認します
+// 戻り値: (isFavorite, favoriteId, error)
+func (u UserDriverImpl) CheckFavoriteStatus(userID, menuID uint) (bool, *uint, error) {
+	var favorite Favorite
+	err := u.conn.Where("user_id = ? AND menu_id = ?", userID, menuID).First(&favorite).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// お気に入りに登録されていない
+			return false, nil, nil
+		}
+		// その他のエラー
+		return false, nil, err
+	}
+
+	// お気に入りに登録されている
+	return true, &favorite.FavoriteID, nil
 }

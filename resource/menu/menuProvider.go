@@ -11,6 +11,7 @@ type MenuDriver interface {
 	UpdateGenreRelations(menuId uint, genreIds []uint) (Menu, error)
 	UpdateCategoryRelations(menuId uint, categoryIds []uint) (Menu, error)
 	DeleteMenu(menuId uint) error
+	MenuExists(menuId uint) (bool, error)
 }
 
 type MenuDriverImpl struct {
@@ -231,6 +232,16 @@ func (t MenuDriverImpl) DeleteMenu(menuId uint) error {
 	}
 
 	return nil
+}
+
+// MenuExists はメニューが存在するかチェックします
+func (t MenuDriverImpl) MenuExists(menuId uint) (bool, error) {
+	var count int64
+	err := t.conn.Model(&Menu{}).Where("menu_id = ?", menuId).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 type Menu struct {
