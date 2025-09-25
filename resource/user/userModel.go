@@ -32,6 +32,17 @@ func (Favorite) TableName() string {
 	return "favorites"
 }
 
+// FavoriteWithMenu お気に入りとメニュー情報を含む構造体
+type FavoriteWithMenu struct {
+	FavoriteID  uint      `json:"favoriteId"`
+	UserID      uint      `json:"userId"`
+	MenuID      uint      `json:"menuId"`
+	MenuName    string    `json:"menuName"`
+	GenreIDs    []uint    `json:"genreIds"`
+	CategoryIDs []uint    `json:"categoryIds"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
 // UserDriver はユーザー関連のデータベース操作のためのインターフェース
 type UserDriver interface {
 	CreateOrGetUser(auth0Sub string) (User, bool, error)
@@ -39,6 +50,7 @@ type UserDriver interface {
 	AddFavorite(userID, menuID uint) (Favorite, error)
 	RemoveFavorite(userID, menuID uint) error
 	GetUserFavorites(userID uint) ([]Favorite, error)
+	GetUserFavoritesWithMenu(userID uint) ([]FavoriteWithMenu, error)
 }
 
 // UserDriverImpl はUserDriverインターフェースを実装します
@@ -105,4 +117,91 @@ func (u UserDriverImpl) GetUserFavorites(userID uint) ([]Favorite, error) {
 	var favorites []Favorite
 	err := u.conn.Where("user_id = ?", userID).Find(&favorites).Error
 	return favorites, err
+}
+
+// GetUserFavoritesWithMenu はユーザーのお気に入りとメニュー情報を結合して取得します
+func (u UserDriverImpl) GetUserFavoritesWithMenu(userID uint) ([]FavoriteWithMenu, error) {
+	var results []FavoriteWithMenu
+
+	// favoritesテーブルとmenu_listテーブルをJOIN
+	// 削除されたメニューは除外される（LEFT JOINではなくINNER JOIN）
+	query := `
+		SELECT 
+			f.favorite_id,
+			f.user_id,
+			f.menu_id,
+			m.menu_name,
+			f.created_at
+		FROM favorites f
+		INNER JOIN menu_list m ON f.menu_id = m.menu_id
+		WHERE f.user_id = ?
+		ORDER BY f.created_at DESC
+	`
+
+	rows, err := u.conn.Raw(query, userID).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var favorites []struct {
+		FavoriteID uint
+		UserID     uint
+		MenuID     uint
+		MenuName   string
+		CreatedAt  time.Time
+	}
+
+	for rows.Next() {
+		var fav struct {
+			FavoriteID uint
+			UserID     uint
+			MenuID     uint
+			MenuName   string
+			CreatedAt  time.Time
+		}
+		if err := u.conn.ScanRows(rows, &fav); err != nil {
+			return nil, err
+		}
+		favorites = append(favorites, fav)
+	}
+
+	// 各お気に入りに対してジャンルとカテゴリ情報を取得
+	for _, fav := range favorites {
+		var genreIDs []uint
+		var categoryIDs []uint
+
+		// ジャンルIDを取得
+		genreQuery := `
+			SELECT mgr.genre_id 
+			FROM menu_genre_relation mgr 
+			WHERE mgr.menu_id = ?
+		`
+		if err := u.conn.Raw(genreQuery, fav.MenuID).Pluck("genre_id", &genreIDs).Error; err != nil {
+			return nil, err
+		}
+
+		// カテゴリIDを取得
+		categoryQuery := `
+			SELECT mcr.category_id 
+			FROM menu_category_relation mcr 
+			WHERE mcr.menu_id = ?
+		`
+		if err := u.conn.Raw(categoryQuery, fav.MenuID).Pluck("category_id", &categoryIDs).Error; err != nil {
+			return nil, err
+		}
+
+		result := FavoriteWithMenu{
+			FavoriteID:  fav.FavoriteID,
+			UserID:      fav.UserID,
+			MenuID:      fav.MenuID,
+			MenuName:    fav.MenuName,
+			GenreIDs:    genreIDs,
+			CategoryIDs: categoryIDs,
+			CreatedAt:   fav.CreatedAt,
+		}
+		results = append(results, result)
+	}
+
+	return results, nil
 }

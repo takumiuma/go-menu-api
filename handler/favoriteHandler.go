@@ -30,7 +30,7 @@ type AddFavoriteResponse struct {
 
 // GetFavoritesResponse お気に入り一覧取得レスポンス
 type GetFavoritesResponse struct {
-	Favorites []user.Favorite `json:"favorites"`
+	Favorites []user.FavoriteWithMenu `json:"favorites"`
 }
 
 // AddFavorite お気に入りを追加
@@ -139,8 +139,8 @@ func (h *FavoriteHandler) GetFavorites(c *gin.Context) {
 		return
 	}
 
-	// ユーザーのお気に入り一覧を取得
-	favorites, err := h.userDriver.GetUserFavorites(userIDUint)
+	// ユーザーのお気に入り一覧をメニュー情報と共に取得
+	favorites, err := h.userDriver.GetUserFavoritesWithMenu(userIDUint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to get favorites: " + err.Error(),
