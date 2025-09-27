@@ -9,10 +9,10 @@ import (
 
 // User はAuth0統合のためのusersテーブルを表します
 type User struct {
-	UserID    uint   `gorm:"primaryKey;column:user_id"`
-	Auth0Sub  string `gorm:"type:varchar(255);uniqueIndex;not null;column:auth0_sub"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID    uint      `gorm:"primaryKey;column:user_id" json:"user_id"`
+	Auth0Sub  string    `gorm:"type:varchar(255);uniqueIndex;not null;column:auth0_sub" json:"auth0_sub"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// リレーション
 	Favorites []Favorite `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
@@ -21,12 +21,12 @@ type User struct {
 // Favorite はユーザーのお気に入りメニューのためのfavoritesテーブルを表します
 type Favorite struct {
 	FavoriteID uint      `gorm:"primaryKey;column:favorite_id" json:"favorite_id"`
-	UserID     uint      `gorm:"not null;column:user_id;index" json:"-"`
+	UserID     uint      `gorm:"not null;column:user_id;index" json:"user_id"`
 	MenuID     uint      `gorm:"not null;column:menu_id;index" json:"menu_id"`
-	CreatedAt  time.Time `json:"-"`
+	CreatedAt  time.Time `json:"created_at"`
 
 	// リレーション
-	User User `gorm:"foreignKey:UserID" json:"-"`
+	User User `gorm:"foreignKey:UserID" json:"user"`
 }
 
 func (Favorite) TableName() string {
