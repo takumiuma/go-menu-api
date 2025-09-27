@@ -37,7 +37,6 @@ type UserDriver interface {
 	CreateOrGetUser(auth0Sub string) (User, bool, error)
 	GetUserByAuth0Sub(auth0Sub string) (User, error)
 	AddFavorite(userID, menuID uint) (Favorite, error)
-	RemoveFavorite(userID, menuID uint) error
 	GetUserFavorites(userID uint) ([]Favorite, error)
 	GetFavoriteByID(favoriteID uint) (Favorite, error)
 	RemoveFavoriteByID(favoriteID uint) error
@@ -95,11 +94,6 @@ func (u UserDriverImpl) AddFavorite(userID, menuID uint) (Favorite, error) {
 
 	err := u.conn.Create(&favorite).Error
 	return favorite, err
-}
-
-// RemoveFavorite はメニューをユーザーのお気に入りから削除します
-func (u UserDriverImpl) RemoveFavorite(userID, menuID uint) error {
-	return u.conn.Where("user_id = ? AND menu_id = ?", userID, menuID).Delete(&Favorite{}).Error
 }
 
 // GetUserFavorites はユーザーのすべてのお気に入りを取得します

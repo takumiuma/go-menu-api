@@ -84,49 +84,6 @@ func (h *FavoriteHandler) AddFavorite(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// RemoveFavorite お気に入りを削除
-func (h *FavoriteHandler) RemoveFavorite(c *gin.Context) {
-	// コンテキストからユーザーIDを取得
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "User not authenticated",
-		})
-		return
-	}
-
-	userIDUint, ok := userID.(uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Invalid user ID format",
-		})
-		return
-	}
-
-	// パスパラメータから menu_id を取得
-	menuIDStr := c.Param("menu_id")
-	menuID, err := strconv.ParseUint(menuIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid menu_id",
-		})
-		return
-	}
-
-	// お気に入りから削除
-	err = h.userDriver.RemoveFavorite(userIDUint, uint(menuID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to remove favorite: " + err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Favorite removed successfully",
-	})
-}
-
 // GetFavorites ユーザーのお気に入り一覧を取得
 func (h *FavoriteHandler) GetFavorites(c *gin.Context) {
 	// コンテキストからユーザーIDを取得

@@ -92,7 +92,6 @@ func NewServer() *gin.Engine {
 		{
 			authGroup.GET("", favoriteHandler.GetFavorites)
 			authGroup.POST("", favoriteHandler.AddFavorite)
-			authGroup.DELETE("/menu/:menu_id", favoriteHandler.RemoveFavorite)
 			authGroup.DELETE("/:favoriteId", favoriteHandler.RemoveFavoriteByID)
 		}
 	}
