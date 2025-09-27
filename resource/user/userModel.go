@@ -20,10 +20,10 @@ type User struct {
 
 // Favorite はユーザーのお気に入りメニューのためのfavoritesテーブルを表します
 type Favorite struct {
-	FavoriteID uint      `gorm:"primaryKey;column:favorite_id" json:"favoriteId"`
-	UserID     uint      `gorm:"not null;column:user_id;index" json:"userId"`
-	MenuID     uint      `gorm:"not null;column:menu_id;index" json:"menuId"`
-	CreatedAt  time.Time `json:"createdAt"`
+	FavoriteID uint      `gorm:"primaryKey;column:favorite_id" json:"favorite_id"`
+	UserID     uint      `gorm:"not null;column:user_id;index" json:"-"`
+	MenuID     uint      `gorm:"not null;column:menu_id;index" json:"menu_id"`
+	CreatedAt  time.Time `json:"-"`
 
 	// リレーション
 	User User `gorm:"foreignKey:UserID" json:"-"`

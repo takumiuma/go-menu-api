@@ -20,7 +20,7 @@ func ProvideFavoriteHandler(userDriver user.UserDriver) *FavoriteHandler {
 
 // AddFavoriteRequest お気に入り追加リクエスト
 type AddFavoriteRequest struct {
-	MenuID uint `json:"menuId" binding:"required"`
+	MenuID uint `json:"menu_id" binding:"required"`
 }
 
 // AddFavoriteResponse お気に入り追加レスポンス
