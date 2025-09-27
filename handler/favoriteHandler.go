@@ -64,9 +64,21 @@ func (h *FavoriteHandler) AddFavorite(c *gin.Context) {
 	// お気に入りに追加
 	favorite, err := h.userDriver.AddFavorite(userIDUint, req.MenuID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to add favorite: " + err.Error(),
-		})
+		// エラーメッセージによって適切なHTTPステータスコードを返す
+		switch err.Error() {
+		case "Menu is already in favorites":
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "Menu is already in favorites",
+			})
+		case "Menu not found":
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Menu not found",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to add favorite: " + err.Error(),
+			})
+		}
 		return
 	}
 

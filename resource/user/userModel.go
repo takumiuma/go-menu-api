@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -8,10 +9,10 @@ import (
 
 // User はAuth0統合のためのusersテーブルを表します
 type User struct {
-	UserID    uint   `gorm:"primaryKey;column:user_id"`
-	Auth0Sub  string `gorm:"type:varchar(255);uniqueIndex;not null;column:auth0_sub"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID    uint      `gorm:"primaryKey;column:user_id" json:"user_id"`
+	Auth0Sub  string    `gorm:"type:varchar(255);uniqueIndex;not null;column:auth0_sub" json:"auth0_sub"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// リレーション
 	Favorites []Favorite `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
@@ -19,13 +20,13 @@ type User struct {
 
 // Favorite はユーザーのお気に入りメニューのためのfavoritesテーブルを表します
 type Favorite struct {
-	FavoriteID uint `gorm:"primaryKey;column:favorite_id"`
-	UserID     uint `gorm:"not null;column:user_id;index"`
-	MenuID     uint `gorm:"not null;column:menu_id;index"`
-	CreatedAt  time.Time
+	FavoriteID uint      `gorm:"primaryKey;column:favorite_id" json:"favorite_id"`
+	UserID     uint      `gorm:"not null;column:user_id;index" json:"user_id"`
+	MenuID     uint      `gorm:"not null;column:menu_id;index" json:"menu_id"`
+	CreatedAt  time.Time `json:"created_at"`
 
 	// リレーション
-	User User `gorm:"foreignKey:UserID"`
+	User User `gorm:"foreignKey:UserID" json:"user"`
 }
 
 func (Favorite) TableName() string {
@@ -86,12 +87,34 @@ func (u UserDriverImpl) GetUserByAuth0Sub(auth0Sub string) (User, error) {
 
 // AddFavorite はメニューをユーザーのお気に入りに追加します
 func (u UserDriverImpl) AddFavorite(userID, menuID uint) (Favorite, error) {
+	// 重複チェック：既にお気に入りに追加されているかを確認
+	var existingFavorite Favorite
+	err := u.conn.Where("user_id = ? AND menu_id = ?", userID, menuID).First(&existingFavorite).Error
+	if err == nil {
+		// 既に存在している場合は重複エラーを返す
+		return Favorite{}, errors.New("Menu is already in favorites")
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// その他のデータベースエラー
+		return Favorite{}, err
+	}
+
+	// メニュー存在チェック：メニューテーブルにmenu_idが存在するかを確認
+	var menuCount int64
+	err = u.conn.Table("menu_list").Where("menu_id = ?", menuID).Count(&menuCount).Error
+	if err != nil {
+		return Favorite{}, err
+	}
+	if menuCount == 0 {
+		return Favorite{}, errors.New("Menu not found")
+	}
+
+	// お気に入りを作成
 	favorite := Favorite{
 		UserID: userID,
 		MenuID: menuID,
 	}
 
-	err := u.conn.Create(&favorite).Error
+	err = u.conn.Create(&favorite).Error
 	return favorite, err
 }
 
