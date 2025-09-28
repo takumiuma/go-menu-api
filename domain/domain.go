@@ -7,3 +7,9 @@ type Menu struct {
 	GenreIds    []uint `json:"genre_ids"`
 	CategoryIds []uint `json:"category_ids"`
 }
+
+// お気に入り情報
+type Favorites struct {
+	FavoriteID uint `json:"favorite_id"`
+	MenuID     uint `json:"menu_id"`
+}

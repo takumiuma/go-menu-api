@@ -33,17 +33,6 @@ func (Favorite) TableName() string {
 	return "favorites"
 }
 
-// FavoriteWithMenu お気に入りとメニュー情報を含む構造体
-type FavoriteWithMenu struct {
-	FavoriteID  uint      `json:"favoriteId"`
-	UserID      uint      `json:"userId"`
-	MenuID      uint      `json:"menuId"`
-	MenuName    string    `json:"menuName"`
-	GenreIDs    []uint    `json:"genreIds"`
-	CategoryIDs []uint    `json:"categoryIds"`
-	CreatedAt   time.Time `json:"createdAt"`
-}
-
 // UserDriver はユーザー関連のデータベース操作のためのインターフェース
 type UserDriver interface {
 	CreateOrGetUser(auth0Sub string) (User, bool, error)
