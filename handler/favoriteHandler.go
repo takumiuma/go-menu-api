@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"go-menu/domain"
 	"go-menu/resource/user"
 	"net/http"
 	"strconv"
@@ -32,7 +33,7 @@ type AddFavoriteResponse struct {
 
 // GetFavoritesResponse お気に入り一覧取得レスポンス
 type GetFavoritesResponse struct {
-	Favorites []user.Favorite `json:"favorites"`
+	Favorites []domain.Favorites `json:"favorites"`
 }
 
 // DeleteFavoriteResponse お気に入り削除レスポンス
@@ -124,8 +125,17 @@ func (h *FavoriteHandler) GetFavorites(c *gin.Context) {
 		return
 	}
 
+	// domain.Favorites形式に変換
+	var domainFavorites []domain.Favorites
+	for _, fav := range favorites {
+		domainFavorites = append(domainFavorites, domain.Favorites{
+			FavoriteID: fav.FavoriteID,
+			MenuID:     fav.MenuID,
+		})
+	}
+
 	response := GetFavoritesResponse{
-		Favorites: favorites,
+		Favorites: domainFavorites,
 	}
 
 	c.JSON(http.StatusOK, response)
