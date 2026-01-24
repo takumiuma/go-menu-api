@@ -42,3 +42,12 @@ func InitUserHandler() *handler.UserHandler {
 	userHandler := handler.ProvideUserHandler(userDriver)
 	return userHandler
 }
+
+func InitGraphQLHandler() *handler.GraphQLHandler {
+	db := resource.ConnectToDatabase()
+	menuDriver := menu.ProvideMenuDriver(db)
+	menuPort := gateway.ProvideMenuPort(menuDriver)
+	menuUsecase := usecase.ProvideMenuUsecase(menuPort)
+	graphqlHandler := handler.ProvideGraphQLHandler(menuUsecase)
+	return graphqlHandler
+}
