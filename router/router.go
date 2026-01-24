@@ -96,5 +96,12 @@ func NewServer() *gin.Engine {
 		}
 	}
 
+	// GraphQLエンドポイント
+	{
+		graphqlHandler := di.InitGraphQLHandler()
+		v1.POST("/graphql", graphqlHandler.GraphQLHandlerFunc())
+		v1.GET("/graphql", graphqlHandler.GraphQLHandlerFunc())
+	}
+
 	return r
 }
