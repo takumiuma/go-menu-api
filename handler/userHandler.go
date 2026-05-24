@@ -20,7 +20,7 @@ func ProvideUserHandler(userDriver user.UserDriver) *UserHandler {
 
 // CreateUserRequest ユーザー作成リクエスト
 type CreateUserRequest struct {
-	Auth0Sub string `json:"auth0Sub" binding:"required"`
+	Auth0Sub string `json:"auth0_sub" binding:"required"`
 }
 
 // UserResponse ユーザーレスポンス
