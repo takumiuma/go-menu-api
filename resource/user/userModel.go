@@ -93,7 +93,7 @@ func (u UserDriverImpl) AddFavorite(userID, menuID uint) (Favorite, error) {
 	err := u.conn.Where("user_id = ? AND menu_id = ?", userID, menuID).First(&existingFavorite).Error
 	if err == nil {
 		// 既に存在している場合は重複エラーを返す
-		return Favorite{}, errors.New("Menu is already in favorites")
+		return Favorite{}, errors.New("menu is already in favorites")
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		// その他のデータベースエラー
 		return Favorite{}, err
@@ -106,7 +106,7 @@ func (u UserDriverImpl) AddFavorite(userID, menuID uint) (Favorite, error) {
 		return Favorite{}, err
 	}
 	if menuCount == 0 {
-		return Favorite{}, errors.New("Menu not found")
+		return Favorite{}, errors.New("menu not found")
 	}
 
 	// お気に入りを作成
