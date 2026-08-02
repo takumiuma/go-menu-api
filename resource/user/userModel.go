@@ -26,7 +26,7 @@ type Favorite struct {
 	CreatedAt  time.Time `json:"created_at"`
 
 	// リレーション
-	User User `gorm:"foreignKey:UserID" json:"user"`
+	User User `gorm:"references:UserID" json:"user"`
 }
 
 func (Favorite) TableName() string {
