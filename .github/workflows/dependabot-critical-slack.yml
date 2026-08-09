@@ -1,0 +1,67 @@
+name: Dependabot Critical PR Slack Notification
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  notify-slack-on-critical:
+    name: Notify Slack for Critical Dependabot PR
+    runs-on: ubuntu-24.04
+    # このジョブはDependabotが作成したPRでのみ実行される。PRはCriticalのものに限定される。
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: Critical脆弱性のDependabot PRが作成されました",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rotating_light: Critical脆弱性 Dependabot PR通知"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR:*\n<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*リポジトリ:*\n<${{ github.event.repository.html_url }}|${{ github.repository }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*作成者:*\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*作成日時:*\n${{ github.event.pull_request.created_at }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "PRを確認する"
+                      },
+                      "url": "${{ github.event.pull_request.html_url }}",
+                      "style": "danger"
+                    }
+                  ]
+                }
+              ]
+            }
