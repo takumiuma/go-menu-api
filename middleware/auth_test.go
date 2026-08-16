@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"go-menu/resource/user"
@@ -116,8 +115,8 @@ func TestNewAuth0Config(t *testing.T) {
 }
 
 func TestNewAuth0Config_Empty(t *testing.T) {
-	os.Unsetenv("AUTH0_DOMAIN")
-	os.Unsetenv("AUTH0_AUDIENCE")
+	t.Setenv("AUTH0_DOMAIN", "")
+	t.Setenv("AUTH0_AUDIENCE", "")
 
 	config := NewAuth0Config()
 
@@ -129,7 +128,7 @@ func TestConvertJWKToRSAPublicKey_Success(t *testing.T) {
 	assert.NoError(t, err)
 
 	eBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(eBytes, uint32(privateKey.PublicKey.E))
+	binary.BigEndian.PutUint32(eBytes, uint32(privateKey.E))
 	// 先頭のゼロバイトを除去（JWKのeは最小バイト数で表現される）
 	for len(eBytes) > 1 && eBytes[0] == 0 {
 		eBytes = eBytes[1:]
@@ -139,15 +138,15 @@ func TestConvertJWKToRSAPublicKey_Success(t *testing.T) {
 		Kty: "RSA",
 		Use: "sig",
 		Kid: "test-kid",
-		N:   base64.RawURLEncoding.EncodeToString(privateKey.PublicKey.N.Bytes()),
+		N:   base64.RawURLEncoding.EncodeToString(privateKey.N.Bytes()),
 		E:   base64.RawURLEncoding.EncodeToString(eBytes),
 	}
 
 	publicKey, err := convertJWKToRSAPublicKey(jwk)
 
 	assert.NoError(t, err)
-	assert.Equal(t, privateKey.PublicKey.E, publicKey.E)
-	assert.Equal(t, 0, privateKey.PublicKey.N.Cmp(publicKey.N))
+	assert.Equal(t, privateKey.E, publicKey.E)
+	assert.Equal(t, 0, privateKey.N.Cmp(publicKey.N))
 }
 
 func TestConvertJWKToRSAPublicKey_InvalidN(t *testing.T) {
