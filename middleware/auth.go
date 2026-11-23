@@ -196,7 +196,7 @@ func getAuth0PublicKey(domain, kid string) (*rsa.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var jwks JWKSResponse
 	if err := json.NewDecoder(resp.Body).Decode(&jwks); err != nil {
